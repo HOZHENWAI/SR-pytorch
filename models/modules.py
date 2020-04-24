@@ -4,6 +4,10 @@ import torch.nn as nn
 
 
 class residual_block2prelu(nn.Module):
+    """
+    To do
+
+    """
     def __init__(self, in_channels = 64,kernels = 3, neurons = 64):
         super().__init__()
         self.conv1 = nn.Conv2d(in_channels = in_channels, out_channels = neurons, kernel_size = kernels, stride = 1, padding = (kernels-1)/2)
@@ -22,6 +26,10 @@ class residual_block2prelu(nn.Module):
         return output
 
 class upscaler_block(nn.Module):
+    """
+    To do
+
+    """
     def __init__(self, in_channels =64, kernels = 3, neurons = 256):
         super().__init__()
         self.conv1 = nn.Conv2d(in_channels = in_channels, out_channels = neurons, kernel_size = kernels, strides = 1, padding = (kernels-1)/2)
@@ -34,6 +42,9 @@ class upscaler_block(nn.Module):
         return output
 
 class residual_block1lrelu(nn.Module):
+    """
+    To do
+    """
     def __init__(self, in_channels = 64, kernels = 3, neurons = 64, stride = 1):
         super().__init__()
         self.conv1 = nn.Conv2d(in_channels = in_channels, out_channels = neurons, kernel_size = kernels, stride = stride, padding = (kernels-1)/2)
