@@ -34,3 +34,12 @@ def normalize(n_channels):
     3:[0.5,0.5,0.5]}[n_channels] #unless i get better
     out = transforms.Normalize(mean, std)
     return out
+
+def reverse(n_channels):
+    """
+    To Do,
+    """
+    mean = {1: -0.5, 3:[-0.5,-0.5,-0.5]}[n_channels]
+    std = {1: 1/0.5, 3:[1/0.5,1/0.5,1/0.5]}[n_channels]
+    out =  transforms.Compose([transforms.Normalize(mean,std), transforms.ToPILImage()])
+    return out

@@ -72,7 +72,7 @@ dataset = {
 dataloader = torch.utils.data.DataLoader(dataset, batch_size=parameters.batch_size,
                 shuffle=True, num_workers = parameters.nworkers)
 
-######################### Create the fake image generator
+######################### Create the lowres image generator
 lowres_size = (parameters.imagesize[0]//parameters.upSampleFactor, parameters.imagesize[1]//parameters.upSampleFactor)
 sampler = helper_functions.imageprocessing.downsampler(lowres_size, n_channels = parameters.n_channels)
 normalizer = helper_functions.imageprocessing.normalize(n_channels = parameters.n_channels)
