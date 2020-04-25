@@ -1,6 +1,8 @@
 import torch.optim as optim
 import torch
 from torch.autograd import Variable
+
+from helper_functions.logger import Visualizer
 # place visualisation function here
 class ModelTrainer:
     """
@@ -31,9 +33,9 @@ class ModelTrainer:
             if parameters.weightdis:
                 self.discriminator.load_state_dict(torch.load(model_path+'weights/'+weightdis))
 
-    def train(self,batch_size, epochs, lrate, lowres_size, device,metrics = 'PSNR',,tensorboard = False):
+    def train(self,batch_size, epochs, lrate, lowres_size, device, save_loc, metrics = 'PSNR',board = None):
         """
-
+            To do
         """
         optim_generator = {
             'Adam' : optim.Adam(self.generator.parameters(), lr = lrate)
@@ -44,42 +46,44 @@ class ModelTrainer:
             'Adam' : optim.Adam(self.discriminator.parameters(), lr = lrate)
             }[self.optimizer]
 
-        # Get epochs losses (take the mean here)
-        G_losses = []
-        if self.discriminator:
-            D_losses = []
-
-
-        # Create a tensor to hold the low res images for each batch
+        ########### get the logger running: get the models first
+        if board:
+            board.add_graph(generator)
+            ImageV = Visualizer(lowres_size[0], (lowres_size[1], lowres_size[2]))
+        ########### Create a tensor to hold the low res images for each batch
         low_res_fake = torch.FloatTensor(batch_size,lowres_size[0], lowres_size[1],lowres_size[2] ).to(device)
 
         # iterate through all epochs
         for epoch in range(epochs):
 
-            # track it iterations numbers for visualisation purposes
+            ############### track it iterations numbers for visualisation purposes
             iters = 0
 
-            # track the mean loss through the epochs
+            ############### track the mean loss through the epochs
             G_losses_mean = 0
             if self.discriminator:
                 D_losses_mean = 0
 
             for i, images in enumerate(self.dataloader):
                 iters += 1
-                # load n_batch images
+                ############# load n_batch images
                 high_res_real, _ = images
                 for j in range(batch_size):
-                    low_res_fake[j] = self.sampler(high_res_real[j]).to(device)
+                    low_res[j] = self.sampler(high_res_real[j]).to(device)
                     high_res_real[j] = self.normalizer(high_res_real[j]).to(device)
 
                 real_label = torch.full((batch_size,), 1, device = device)
                 fake_label = torch.full((batch_size,), 0, device = device)
                 #create fake outputs
-                high_res_fake = self.generator(low_res_fake).to(device)
+                high_res_fake = self.generator(low_res).to(device)
 
-                ## Training the discriminator
-                if discriminator:
-                    ## Train with all real batch_size
+                ######### if tensorboard, visualise some images
+                if board:
+                    board.add_figure('LRvsHRvsHRFake', ImageV(low_res[0], high_res_real[0], high_res_fake[0]),epoch*len(self.dataloader)+iters)
+
+                ######### Training the discriminator
+                if self.discriminator:
+                    ####### Train with all real batch_size
 
                     self.discriminator.zero_grad()
                     discriminator_real = self.loss_adv(self.discriminator(high_res_real), real_label).to(device)
@@ -92,7 +96,7 @@ class ModelTrainer:
 
                     optim_discriminator.step()
 
-                ## Training the Generator
+                ######### Training the Generator
                 self.generator.zero_grad()
                 generator_loss = self.loss_content(high_res_fake, high_res_real).to(device)
                 G_losses_mean += generator_loss.item()
@@ -100,7 +104,15 @@ class ModelTrainer:
                 generator_loss.backward()
                 optim_generator.step()
 
-            # End of epochs
+            ########## End of epoch
             G_losses_mean = G_losses_mean / len(self.dataloader)
+            if board:
+                board.add_scalar('generator_loss', G_losses_mean, epoch)
+
             if self.discriminator:
                 D_losses_mean = D_losses_mean / len(self.dataloader)
+                if board:
+                    board.add_scalar('discriminator_loss', D_losses_mean, epoch)
+            torch.save(self.generator.state_dict(), save_loc+'weights/generator_final.pth')
+            if self.discriminator:
+                torch.save(self.discriminator.state_dict(), save_loc+'weights/discriminator_final.pth')

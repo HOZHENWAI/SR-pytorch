@@ -1,5 +1,5 @@
 from models.modules import residual_block1lrelu, residual_block2prelu, upscaler_block
-import torch.sigmoid as sigmoid
+import torch
 import torch.nn as nn
 
 
@@ -86,5 +86,5 @@ class discriminator(nn.Module):
         output = self.dense1(output)
         output = self.Lrelu2(output)
         output = self.dense2(output)
-        output = sigmoid(output)
+        output = torch.sigmoid(output)
         return output
