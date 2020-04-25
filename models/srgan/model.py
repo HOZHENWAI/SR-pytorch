@@ -1,5 +1,5 @@
 from models.modules import residual_block1lrelu, residual_block2prelu, upscaler_block
-import torch.nn.functional as F
+import torch.sigmoid as sigmoid
 import torch.nn as nn
 
 
@@ -50,7 +50,7 @@ class discriminator(nn.Module):
     """
     Discrimimation network
     """
-    def __init__(self, n_residual_blocks = 7, im_channels = 3, n_neurons_p1 = 64 , n_neurons_p2 = 1024):
+    def __init__(self, n_residual_blocks = 7, im_channels = 3, n_neurons_p1 = 64 , n_neurons_p2 = 1024, highres_size=(64,64)):
         super().__init__()
         self.n_residual_blocks = n_residual_blocks
         self.im_channels = im_channels
@@ -60,12 +60,19 @@ class discriminator(nn.Module):
         self.conv1 = nn.Conv2d(in_channels = self.im_channels, out_channels = self.n_neurons_p1, kernel_size = 3, stride = 1, padding = 1)
         self.Lrelu1 = nn.LeakyReLU()
         self.add_module('residual_block_0', residual_block1lrelu(in_channels = self.n_neurons_p1, neurons = self.n_neurons_p1, stride = 2))
+
+        size = highres_size
+
+        input_channel = self.n_neurons_p1
         for n in range(1,self.n_residual_blocks):
             multiplier = 2**(n//2 +1)
             stride = 1+ (n+1)%2
-            self.add_module('residual_block_'+str(n), residual_block1lrelu(in_channels = self.n_neurons_p1*multiplier, neurons = self.n_neurons_p1*multiplier, stride = stride))
+            self.add_module('residual_block_'+str(n), residual_block1lrelu(in_channels = input_channel, neurons = self.n_neurons_p1*multiplier, stride = stride))
+            input_channel = self.n_neurons_p1*multiplier
+            size = (size[0] // stride, size[1]//stride)
 
-        self.dense1 = nn.Linear(in_features = self.n_neurons_p1*multiplier , out_features = self.n_neurons_p2)
+        self.flat = nn.Flatten()
+        self.dense1 = nn.Linear(in_features = input_channel*size[0]*size[1]//4, out_features = self.n_neurons_p2)
         self.Lrelu2 = nn.LeakyReLU()
         self.dense2 = nn.Linear(in_features = self.n_neurons_p2, out_features = 1)
 
@@ -75,8 +82,9 @@ class discriminator(nn.Module):
         for n in range(self.n_residual_blocks):
             output = self.__getattr__('residual_block_'+str(n))(output)
 
-        output = self.dense1(output.view(-1))
+        output = self.flat(output)
+        output = self.dense1(output)
         output = self.Lrelu2(output)
         output = self.dense2(output)
-        output = F.sigmoid(output)
+        output = sigmoid(output)
         return output

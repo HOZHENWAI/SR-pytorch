@@ -54,7 +54,7 @@ model_path = here +'/'+ parameters.model+'/'
 # Create the model
 if parameters.model in ['srgan']: # adverserial model
     genera = generator(im_channels = parameters.n_channels, upscale_factor = parameters.upSampleFactor) # no option to change the others parameters yet
-    discri = discriminator(im_channels = parameters.n_channels) # no option to change the others parameters yet
+    discri = discriminator(im_channels = parameters.n_channels, highres_size = parameters.imagesize) # no option to change the others parameters yet
 
 
 # Load the data into dataset class and apply random cropping and rotation to generate random highres sample (this require original images to have larger size than defined by parameters.imagesize)

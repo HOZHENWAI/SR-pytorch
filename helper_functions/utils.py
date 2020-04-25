@@ -1,5 +1,6 @@
 import torch.optim as optim
 import torch
+from torch.autograd import Variable
 # place visualisation function here
 class ModelTrainer:
     """
@@ -83,18 +84,18 @@ class ModelTrainer:
                     self.discriminator.zero_grad()
                     discriminator_real = self.loss_adv(self.discriminator(high_res_real), real_label).to(device)
                     discriminator_real.backward()
-                    discriminator_fake = self.loss_adv(self.discriminator(high_res_fake), fake_label).to(device)
+                    discriminator_fake = self.loss_adv(self.discriminator(high_res_fake.detach()), fake_label).to(device)
                     discriminator_fake.backward()
                     discriminator_loss = discriminator_real + discriminator_fake
 
-                    D_losses_mean += discriminator_loss.data[0]
+                    D_losses_mean += discriminator_loss.item()
 
                     optim_discriminator.step()
 
                 ## Training the Generator
                 self.generator.zero_grad()
                 generator_loss = self.loss_content(high_res_fake, high_res_real).to(device)
-                G_losses_mean += generator_loss.data[0]
+                G_losses_mean += generator_loss.item()
 
                 generator_loss.backward()
                 optim_generator.step()
