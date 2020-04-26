@@ -50,8 +50,15 @@ class ModelTrainer:
         if board:
             # board.add_graph(self.generator)
             ImageV = Visualizer(lowres_size[0], (lowres_size[1], lowres_size[2]))
+
+        # send the models to device
+        self.generator.to(device)
+        self.loss_content.to(device)
+        if self.discriminator:
+            self.discriminator.to(device)
+            self.loss_adv.to(device)
         ########### Create a tensor to hold the low res images for each batch
-        low_res_fake = torch.FloatTensor(batch_size,lowres_size[0], lowres_size[1],lowres_size[2] ).to(device)
+        low_res = torch.FloatTensor(batch_size,lowres_size[0], lowres_size[1],lowres_size[2], device = device )
 
         # iterate through all epochs
         for epoch in range(epochs):
@@ -69,14 +76,14 @@ class ModelTrainer:
                 ############# load n_batch images
                 high_res_real, _ = images
                 for j in range(high_res_real.size(0)):
-                    low_res[j] = self.sampler(high_res_real[j]).to(device)
-                    high_res_real[j] = self.normalizer(high_res_real[j]).to(device)
+                    low_res[j] = self.sampler(high_res_real[j])
+                    high_res_real[j] = self.normalizer(high_res_real[j])
 
                 real_label = torch.full((batch_size,1), 1, device = device)
                 fake_label = torch.full((batch_size,1), 0, device = device)
                 #create fake outputs
-                high_res_fake = self.generator(low_res).to(device)
-
+                high_res_fake = self.generator(low_res.to(device))
+                high_res_real = high_res_real.to(device)
                 ######### if tensorboard, visualise some images
                 if board:
                     board.add_figure('LRvsHRvsHRFake', ImageV(low_res[0], high_res_real[0], high_res_fake[0]),epoch*len(self.dataloader)+iters)
