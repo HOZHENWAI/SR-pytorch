@@ -1,5 +1,6 @@
 import torchvision.transforms as transforms
 
+### Returns transforms instance
 
 def downsampler(lowres_size,n_channels):
     """

@@ -82,8 +82,8 @@ class ModelTrainer:
                     low_res[j] = self.sampler(high_res_real[j])
                     high_res_real[j] = self.normalizer(high_res_real[j])
 
-                real_label = torch.full((batch_size,1), 1, device = device)
-                fake_label = torch.full((batch_size,1), 0, device = device)
+                real_label = torch.full((high_res_real.size(0),1), 1, device = device)
+                fake_label = torch.full((high_res_real.size(0),1), 0, device = device)
                 #create fake outputs
                 high_res_fake = self.generator(low_res.to(device))
                 high_res_real = high_res_real.to(device)

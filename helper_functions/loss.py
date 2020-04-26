@@ -1,20 +1,36 @@
-import torch.nn.functional as F
 import torch.nn as nn
+import .helper_functions.functionals as F
 import torchvision
 
-# To do :pixel loss
-class pixel_loss(nn.Module):
+# Pixel loss
+
+class charbonnierLoss(nn.Module):
     """
     To do,
     """
+    def __init__(self):
+        super().__init__()
+    def forward(self, input, target):
+        F.char_loss(input, target)
+
+class pixel_loss(nn.Module):
+    """
+    To do,
+
+    Cha = Charbonnier
+    """
     def __init__(self, name = "l1"):
         super().__init__()
-
+        assert name in ['l1', 'l2', 'Cha']
+        self.loss = {
+        'l2' : nn.MSELoss(),
+        'l1' : nn.L1Loss(),
+        'Cha': nn.charbonnierLoss()
+        }[name]
     def forward(self, input, target):
-        
-# to do: content loss
+        return self.loss(input,target)
 
-# to do : texture loss
+# Texture loss
 
 # to do: adversarial loss
 
@@ -25,7 +41,9 @@ class pixel_loss(nn.Module):
 # to do: prior based loss
 
 
-# perception loss as defined in 1609.04802v5
+################################ Content loss: content as defined as
+
+# perception loss as defined in 1609.04802v5 (features of VGG)
 class VGG19_loss(nn.Module):
     """
     MSE loss of features extracted from VGG19 network.
