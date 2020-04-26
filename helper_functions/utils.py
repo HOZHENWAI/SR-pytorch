@@ -37,6 +37,14 @@ class ModelTrainer:
         """
             To do
         """
+        # send the models to device
+        self.generator.to(device)
+        self.loss_content.to(device)
+        if self.discriminator:
+            self.discriminator.to(device)
+            self.loss_adv.to(device)
+
+        # create the optimizer
         optim_generator = {
             'Adam' : optim.Adam(self.generator.parameters(), lr = lrate)
         }[self.optimizer]
@@ -51,12 +59,7 @@ class ModelTrainer:
             # board.add_graph(self.generator)
             ImageV = Visualizer(lowres_size[0], (lowres_size[1], lowres_size[2]))
 
-        # send the models to device
-        self.generator.to(device)
-        self.loss_content.to(device)
-        if self.discriminator:
-            self.discriminator.to(device)
-            self.loss_adv.to(device)
+
         ########### Create a tensor to hold the low res images for each batch
         low_res = torch.FloatTensor(batch_size,lowres_size[0], lowres_size[1],lowres_size[2], device = device )
 
