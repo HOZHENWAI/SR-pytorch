@@ -48,7 +48,7 @@ class ModelTrainer:
 
         ########### get the logger running: get the models first
         if board:
-            board.add_graph(generator)
+            # board.add_graph(self.generator)
             ImageV = Visualizer(lowres_size[0], (lowres_size[1], lowres_size[2]))
         ########### Create a tensor to hold the low res images for each batch
         low_res_fake = torch.FloatTensor(batch_size,lowres_size[0], lowres_size[1],lowres_size[2] ).to(device)
@@ -68,12 +68,12 @@ class ModelTrainer:
                 iters += 1
                 ############# load n_batch images
                 high_res_real, _ = images
-                for j in range(batch_size):
+                for j in range(high_res_real.size(0)):
                     low_res[j] = self.sampler(high_res_real[j]).to(device)
                     high_res_real[j] = self.normalizer(high_res_real[j]).to(device)
 
-                real_label = torch.full((batch_size,), 1, device = device)
-                fake_label = torch.full((batch_size,), 0, device = device)
+                real_label = torch.full((batch_size,1), 1, device = device)
+                fake_label = torch.full((batch_size,1), 0, device = device)
                 #create fake outputs
                 high_res_fake = self.generator(low_res).to(device)
 

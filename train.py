@@ -99,5 +99,5 @@ train_instance.load_weight(parameters.weightgen, parameters.weightdis)
 
 ###################### Finally the training phase
 train_instance.train(parameters.batch_size,
-    parameters.epochs, parameters.lrate, (parameters.n_channels,lowres_size[0],lowres_size[1]), device, 'PSNR', board = writer, save_loc = model_path)
+    parameters.epochs, parameters.lrate, (parameters.n_channels,lowres_size[0],lowres_size[1]), device, metrics= 'PSNR', board = writer, save_loc = model_path)
     #WIP: low res size is redundant, try to find some way to pass information through the downsampler

@@ -2,20 +2,20 @@ import torch.nn.functional as F
 import torch.nn as nn
 import torchvision
 
-# pixel loss
+# To do :pixel loss
 
 
-# content loss
+# to do: content loss
 
-# texture loss
+# to do : texture loss
 
-# adversarial loss
+# to do: adversarial loss
 
-# cycle consistency loss
+# to do: cycle consistency loss
 
-# total variation loss
+# to do: total variation loss
 
-# prior based loss
+# to do: prior based loss
 
 
 # perception loss as defined in 1609.04802v5
