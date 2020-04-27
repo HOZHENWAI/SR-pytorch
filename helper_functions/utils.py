@@ -19,19 +19,19 @@ class ModelTrainer:
         self.loss_adv = loss_adv
         self.sampler = sampler
         self.normalizer = normalizer
-    def load_weight(self,weightgen = None, weightdis = None):
+    def load_weight(self,weightgen = None, weightdis = None, weight_path=''):
         """
         load weight from location
         """
         if weightgen:
-            self.generator.load_state_dict(torch.load(model_path+'weights/'+weightgen))
+            self.generator.load_state_dict(torch.load(weight_path+weightgen))
 
         if parameters.model in ['srgan']:
             # making sure in that case that a discriminator is given
             assert self.discriminator
             assert self.loss_adv
             if parameters.weightdis:
-                self.discriminator.load_state_dict(torch.load(model_path+'weights/'+weightdis))
+                self.discriminator.load_state_dict(torch.load(weight_path+weightdis))
 
     def train(self,batch_size, epochs, lrate, lowres_size, device, save_loc, metrics = 'PSNR',board = None):
         """

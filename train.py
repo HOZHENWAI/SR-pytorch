@@ -38,7 +38,7 @@ parser.add_argument('--optimizer', default = 'Adam', choices = ['Adam'], help='o
 parser.add_argument('--lrate', default = 0.0002, type=float, help = 'learning rate for optimizer')
 parser.add_argument('--weightgen', default = '', help = 'generator weights name')
 parser.add_argument('--weightdis', default = '', help = 'discrimimator weights name')
-
+parser.add_argument('--weightpath', default = 'weight/', help ='')
 parameters = parser.parse_args()
 
 ############################################## END SET PARAMETERS #################################################
@@ -53,7 +53,10 @@ else:
 ###########################get current dir
 here = path.abspath(path.dirname(__file__))
 model_path = here +'/'+ parameters.model+'/'
-
+if parameters.weightpath:
+    weight_path = model_path + parameters.weight_path
+else:
+    weight_path = ''
 ########################## Create the model
 
 if parameters.model in ['srgan']: # adverserial model
@@ -95,7 +98,7 @@ writer = SummaryWriter(here+'/logs')
 train_instance = ModelTrainer(parameters.model, genera, loss_content, dataloader, parameters.optimizer, sampler, normalizer, discri, loss_adv)
 
 ####################### load the weights if required
-train_instance.load_weight(parameters.weightgen, parameters.weightdis)
+train_instance.load_weight(parameters.weightgen, parameters.weightdis, weight_path = weight_path)
 
 ###################### Finally the training phase
 train_instance.train(parameters.batch_size,
