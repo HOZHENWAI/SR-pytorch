@@ -60,8 +60,7 @@ class ModelTrainer:
             ImageV = Visualizer(lowres_size[0], (lowres_size[1], lowres_size[2]))
 
 
-        ########### Create a tensor to hold the low res images for each batch
-        low_res = torch.FloatTensor(batch_size,lowres_size[0], lowres_size[1],lowres_size[2], device = device )
+
 
         # iterate through all epochs
         for epoch in range(epochs):
@@ -78,6 +77,11 @@ class ModelTrainer:
                 iters += 1
                 ############# load n_batch images
                 high_res_real, _ = images
+
+                ########### Create a tensor to hold the low res images for each batch
+                low_res = torch.FloatTensor(high_res_real.size(0),lowres_size[0], lowres_size[1],lowres_size[2], device = device )
+
+
                 for j in range(high_res_real.size(0)):
                     low_res[j] = self.sampler(high_res_real[j])
                     high_res_real[j] = self.normalizer(high_res_real[j])
