@@ -41,7 +41,7 @@ model_path = here +'/'+ parameters.model+'/'
 
 ########################## Create the model
 if parameters.model in ['srgan']: # adverserial model
-    genera = generator(im_channels = parameters.n_channels, upscale_factor = parameters.upSampleFactor) # no option to change the others parameters yet
+    genera = generator(im_channels = parameters.n_channels, upscale_factor = parameters.upSampleFactor).to(device) # no option to change the others parameters yet
 
 ########################## Load the data into dataset class and apply random cropping and rotation to generate random highres sample WIP
 inputpath = here + '/' + parameters.inputfolder
@@ -55,11 +55,11 @@ dataloader = torch.utils.data.DataLoader(dataset, batch_size=parameters.batch_si
                 shuffle=True, num_workers = parameters.nworkers)
 
 ###################### Load the weight
-generator.load_state_dict(torch.load(model_path+'weights/'+weightgen))
+genera.load_state_dict(torch.load(model_path+'weights/'+weightgen))
 
 ###################### Generate the images and save the image
 for n,images in enumerate(dataloader): #  doing it like this, we have the advantage of batch forward operation but we lose the filename info (WIP)
-    SRI = generator(images)
+    SRI = genera(images)
     for i in range(parameters.batch_size):
         image = reverse(SRI[i])  # PIL format
         image.save(here+parameters.outputfolder + str(n*parameters.batch_size + i))   #
