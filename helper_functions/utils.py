@@ -8,7 +8,7 @@ class ModelTrainer:
     """
     Some wrapper class to train all future model
     """
-    def __init__(self, model,generator, loss_content, dataloader, optimizer, sampler, normalizer,discriminator = None, loss_adv = None):
+    def __init__(self, model,generator, loss_content, dataloader, optimizer, sampler,discriminator = None, loss_adv = None):
         # copy the parameters
         self.model = model
         self.generator = generator
@@ -18,22 +18,8 @@ class ModelTrainer:
         self.discriminator = discriminator
         self.loss_adv = loss_adv
         self.sampler = sampler
-        self.normalizer = normalizer
-    def load_weight(self,weightgen = None, weightdis = None, weight_path=''):
-        """
-        load weight from location
-        """
-        if weightgen:
-            self.generator.load_state_dict(torch.load(weight_path+weightgen))
 
-        if parameters.model in ['srgan']:
-            # making sure in that case that a discriminator is given
-            assert self.discriminator
-            assert self.loss_adv
-            if parameters.weightdis:
-                self.discriminator.load_state_dict(torch.load(weight_path+weightdis))
-
-    def train(self,batch_size, epochs, lrate, lowres_size, device, save_loc, metrics = 'PSNR',board = None):
+    def train(self,batch_size, epochs, lrate, device, save_loc, metrics = 'PSNR',board = None):
         """
             To do
         """
@@ -57,16 +43,10 @@ class ModelTrainer:
         ########### get the logger running: get the models first
         if board:
             # board.add_graph(self.generator)
-            ImageV = Visualizer(lowres_size[0], (lowres_size[1], lowres_size[2]))
-
-
-
+            ImageV = Visualizer()
 
         # iterate through all epochs
         for epoch in range(epochs):
-
-            ############### track it iterations numbers for visualisation purposes
-            iters = 0
 
             ############### track the mean loss through the epochs
             G_losses_mean = 0
@@ -74,20 +54,15 @@ class ModelTrainer:
                 D_losses_mean = 0
 
             for i, images in enumerate(self.dataloader):
-                iters += 1
                 ############# load n_batch images
                 high_res_real, _ = images
 
                 ########### Create a tensor to hold the low res images for each batch
-                low_res = torch.FloatTensor(high_res_real.size(0),lowres_size[0], lowres_size[1],lowres_size[2], device = device )
-
+                low_res = torch.FloatTensor(high_res_real.size(0),sampler.lowres_size[0], sampler.lowres_size[1],sampler.lowres_size[2], device = device )
 
                 for j in range(high_res_real.size(0)):
                     low_res[j] = self.sampler(high_res_real[j])
-                    high_res_real[j] = self.normalizer(high_res_real[j])
 
-                real_label = torch.full((high_res_real.size(0),1), 1, device = device)
-                fake_label = torch.full((high_res_real.size(0),1), 0, device = device)
                 #create fake outputs
                 high_res_fake = self.generator(low_res.to(device))
                 high_res_real = high_res_real.to(device)
@@ -97,11 +72,17 @@ class ModelTrainer:
 
                 ######### Training the discriminator
                 if self.discriminator:
+
+                    real_label = torch.full((high_res_real.size(0),1), 1, device = device)
+                    fake_label = torch.full((high_res_real.size(0),1), 0, device = device)
+
                     ####### Train with all real batch_size
 
                     self.discriminator.zero_grad()
                     discriminator_real = self.loss_adv(self.discriminator(high_res_real), real_label).to(device)
                     discriminator_real.backward()
+
+                    ####### Train with all fakes batch_size
                     discriminator_fake = self.loss_adv(self.discriminator(high_res_fake.detach()), fake_label).to(device)
                     discriminator_fake.backward()
                     discriminator_loss = discriminator_real + discriminator_fake
@@ -127,6 +108,7 @@ class ModelTrainer:
                 D_losses_mean = D_losses_mean / len(self.dataloader)
                 if board:
                     board.add_scalar('discriminator_loss', D_losses_mean, epoch)
-            torch.save(self.generator.state_dict(), save_loc+'weights/generator_final.pth')
+
+            torch.save(self.generator.state_dict(), save_loc+'generator_final.pth')
             if self.discriminator:
-                torch.save(self.discriminator.state_dict(), save_loc+'weights/discriminator_final.pth')
+                torch.save(self.discriminator.state_dict(), save_loc+'discriminator_final.pth')

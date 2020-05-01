@@ -17,7 +17,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--cuda', action = 'store_true', help= 'use Nvidia GPU or not')
 
 # model parameters
-parser.add_argument('--model', default = 'srgan', choices = ['srgan', 'convnet14'], help = 'convnet14|SRGAN')
+parser.add_argument('--model', default = 'srgan', choices = ['srgan'], help = 'SRGAN')
 
 # data parameters
 parser.add_argument('--datafolder', type = str , default = 'data/', help = ' this speaks for himself')
@@ -53,16 +53,21 @@ else:
 ###########################get current dir
 here = path.abspath(path.dirname(__file__))
 model_path = here +'/'+ parameters.model+'/'
+
 if parameters.weightpath:
     weight_path = model_path + parameters.weight_path
 else:
     weight_path = ''
-########################## Create the model
+########################## Create the models
 
 if parameters.model in ['srgan']: # adverserial model
     genera = generator(im_channels = parameters.n_channels, upscale_factor = parameters.upSampleFactor) # no option to change the others parameters yet
     discri = discriminator(im_channels = parameters.n_channels, highres_size = parameters.imagesize) # no option to change the others parameters yet
 
+##########################Load the weights of the pretrained models
+genera.load_weight(weight= parameters.weightgen, weight_path= weight_path)
+if discri:
+    discri.load_weight(weight = parameters.weightpath, weight_path = weight_path)
 
 ########################## Load the data into dataset class and apply random cropping and rotation to generate random highres sample WIP
 datapath = here + '/' + parameters.datafolder
@@ -78,7 +83,7 @@ dataloader = torch.utils.data.DataLoader(dataset, batch_size=parameters.batch_si
 ######################### Create the lowres image generator
 lowres_size = (parameters.imagesize[0]//parameters.upSampleFactor, parameters.imagesize[1]//parameters.upSampleFactor)
 sampler = helper_functions.imageprocessing.downsampler(lowres_size, n_channels = parameters.n_channels)
-normalizer = helper_functions.imageprocessing.normalize(n_channels = parameters.n_channels)
+# normalizer = helper_functions.imageprocessing.normalize(n_channels = parameters.n_channels)
 
 
 ######################## Define the losses
@@ -95,12 +100,10 @@ loss_adv = {
 writer = SummaryWriter(here+'/logs')
 
 ####################### Create training instance
-train_instance = ModelTrainer(parameters.model, genera, loss_content, dataloader, parameters.optimizer, sampler, normalizer, discri, loss_adv)
+train_instance = ModelTrainer(parameters.model, genera, loss_content, dataloader, parameters.optimizer, sampler, discri, loss_adv)
 
 ####################### load the weights if required
-train_instance.load_weight(parameters.weightgen, parameters.weightdis, weight_path = weight_path)
 
 ###################### Finally the training phase
 train_instance.train(parameters.batch_size,
-    parameters.epochs, parameters.lrate, (parameters.n_channels,lowres_size[0],lowres_size[1]), device, metrics= 'PSNR', board = writer, save_loc = model_path)
-    #WIP: low res size is redundant, try to find some way to pass information through the downsampler
+    parameters.epochs, parameters.lrate, device, metrics= 'PSNR', board = writer, save_loc = weight_path)

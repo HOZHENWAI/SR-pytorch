@@ -57,6 +57,8 @@ dataloader = torch.utils.data.DataLoader(dataset, batch_size=parameters.batch_si
 ###################### Load the weight
 genera.load_state_dict(torch.load(model_path+'weights/'+weightgen))
 
+for parameters in genera.parameters():
+    parameters.requires_grad = False
 ###################### Generate the images and save the image
 for n,images in enumerate(dataloader): #  doing it like this, we have the advantage of batch forward operation but we lose the filename info (WIP)
     SRI = genera(images)

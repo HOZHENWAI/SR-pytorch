@@ -2,21 +2,21 @@ import torchvision.transforms as transforms
 
 ### Returns transforms instance
 
-def downsampler(lowres_size,n_channels):
+class downsampler:
     """
-    To Do,
-    Prepare all necessary steps to generate a low image from a high res image in tensor format.
+    to do,
     """
-    mean = {1: 0.5,
-    3 : [0.5,0.5,0.5]}[n_channels] #unless i get better
-    std = {1:0.5,
-    3:[0.5,0.5,0.5]}[n_channels] #unless i get better
-    out = transforms.Compose([transforms.ToPILImage(),
-                                transforms.Resize(lowres_size),
-                                transforms.ToTensor(),
-                                transforms.Normalize(mean, std)
-                                ])
-    return out
+    def __init__(self, lowres_size, n_channels):
+        self.n_channels = n_channels
+        self.lowres_size = lowres_size
+        self.transform = transforms.Compose([transforms.ToPILImage(),
+                                    transforms.Resize(self.lowres_size),
+                                    transforms.ToTensor()
+                                    ])
+
+    def __call__(self, tensorimage):
+        out = self.transform(tensorimage)
+        return out
 
 def imagegen(highres_size, n_channels):
     """
@@ -25,22 +25,22 @@ def imagegen(highres_size, n_channels):
     out = transforms.Compose([transforms.RandomCrop(highres_size), transforms.RandomRotation(degrees = 30) ,transforms.ToTensor()])
     return out
 
-def normalize(n_channels):
+def normalize(n_channels, statistics):
     """
     To Do,
     """
-    mean = {1: 0.5,
-    3 : [0.5,0.5,0.5]}[n_channels] #unless i get better
-    std = {1:0.5,
-    3:[0.5,0.5,0.5]}[n_channels] #unless i get better
+    mean = {1: statistics[0],
+    3 : [statistics[0],statistics[0],statistics[0]]}[n_channels] #unless i get better
+    std = {1:statistics[1],
+    3:[statistics[1],statistics[1],statistics[1]]}[n_channels] #unless i get better
     out = transforms.Normalize(mean, std)
     return out
 
-def reverse(n_channels):
+def reverse(n_channels, statistics):
     """
     To Do,
     """
-    mean = {1: -0.5, 3:[-0.5,-0.5,-0.5]}[n_channels]
-    std = {1: 1/0.5, 3:[1/0.5,1/0.5,1/0.5]}[n_channels]
+    mean = {1: -statistics[0], 3:[-statistics[0],-statistics[0],-statistics[0]]}[n_channels]
+    std = {1: 1/statistics[1], 3:[1/statistics[1],1/statistics[1],1/statistics[1]]}[n_channels]
     out =  transforms.Compose([transforms.Normalize(mean,std), transforms.ToPILImage()])
     return out

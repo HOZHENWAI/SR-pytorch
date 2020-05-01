@@ -27,6 +27,13 @@ class generator(nn.Module):
 
         self.conv3 = nn.Conv2d(in_channels = self.n_neurons_p1, out_channels = self.im_channels, kernel_size = 9, stride = 1, padding = 4)
 
+    def load_weight(self,weight= None, weight_path=''):
+        """
+        load weight from location
+        """
+        if weight:
+            self.load_state_dict(torch.load(weight_path+weight))
+
     def forward(self,input):
         output = self.conv1(input)
         output = self.Prelu(output)
@@ -75,6 +82,13 @@ class discriminator(nn.Module):
         self.dense1 = nn.Linear(in_features = input_channel*size[0]*size[1]//4, out_features = self.n_neurons_p2)
         self.Lrelu2 = nn.LeakyReLU()
         self.dense2 = nn.Linear(in_features = self.n_neurons_p2, out_features = 1)
+
+    def load_weight(self,weight= None, weight_path=''):
+        """
+        load weight from location
+        """
+        if weight:
+            self.load_state_dict(torch.load(weight_path+weight))
 
     def forward(self, input):
         output = self.conv1(input)
