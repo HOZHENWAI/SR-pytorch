@@ -102,8 +102,6 @@ writer = SummaryWriter(here+'/logs')
 ####################### Create training instance
 train_instance = ModelTrainer(parameters.model, genera, loss_content, dataloader, parameters.optimizer, sampler, discri, loss_adv)
 
-####################### load the weights if required
-
 ###################### Finally the training phase
 train_instance.train(parameters.batch_size,
     parameters.epochs, parameters.lrate, device, metrics= 'PSNR', board = writer, save_loc = weight_path)

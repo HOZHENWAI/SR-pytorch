@@ -55,7 +55,7 @@ dataloader = torch.utils.data.DataLoader(dataset, batch_size=parameters.batch_si
                 shuffle=True, num_workers = parameters.nworkers)
 
 ###################### Load the weight
-genera.load_state_dict(torch.load(model_path+'weights/'+weightgen))
+genera.load_state_dict(torch.load(model_path+'weights/'+weightgen)) ###### to change later
 
 for parameters in genera.parameters():
     parameters.requires_grad = False
