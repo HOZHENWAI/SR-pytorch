@@ -3,7 +3,6 @@
 # What is it about?
 
 This project aims to implement various models for Image Super Resolution.
-Currently, only one model is available but hopefully more is to come.
 
 The features planned and provided are:
 - code to train from scratch a model in the hopefully more complete zoo, with an unified training framework
@@ -12,7 +11,7 @@ The features planned and provided are:
 - various weights to preload the models depending on usage (black and white vs colored for example)
 ## Current implementation:
  - SRGAN : Photo-Realistic Single Image Super-Resolution Using a Generative Adversarial Network
-
+ - SRCNN : 
 # Requirements
 - pytorch
 - torchvision
